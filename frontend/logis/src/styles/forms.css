@@ -1,0 +1,24 @@
+.form-container {
+  max-width: 600px;
+  margin: 30px auto;
+  padding: 0 15px;
+}
+
+.form-card {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-card :global(.ant-card-head) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-bottom: none;
+}
+
+.form-card :global(.ant-card-head-title) {
+  color: white;
+  font-weight: bold;
+}
+
+.form-card :global(.ant-form-item-label > label) {
+  font-weight: 500;
+  color: #333;
+}
