@@ -2,6 +2,7 @@ run project
 backend
   cd backend
   go run . หรือ go run main.go
+  
 frontend 
   cd frontend
   cd logis
