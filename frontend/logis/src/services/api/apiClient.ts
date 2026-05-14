@@ -8,14 +8,24 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Add token to requests
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+// Add error logging interceptor
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      console.error("Response Error:", {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers,
+      });
+    } else if (error.request) {
+      console.error("Request Error:", error.request);
+    } else {
+      console.error("Error:", error.message);
+    }
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
 // Auth APIs
 export const authAPI = {
@@ -54,47 +64,46 @@ export const tripAPI = {
 
 // Fuel Claim APIs
 export const fuelClaimAPI = {
-  submitClaim: (tripId: string, amount: number, receiptRef: string, receiptUrl: string) =>
-    api.post<ApiResponse<FuelClaimDetail>>("/api/fuel-claims", {
-      trip_id: tripId,
-      amount,
-      receipt_ref: receiptRef,
-      receipt_url: receiptUrl,
-    }),
+        submitClaim: (data: {
+        trip_id: string;
+        amount: number;
+        receipt_ref: string;
+        receipt_url: string;
+      }) =>
+        api.post<ApiResponse<FuelClaimDetail>>(
+          "/api/fuel-claims",
+          data
+        ),
 
   getClaimWithAuditTrail: (claimId: string) =>
-    api.get<ApiResponse<FuelClaimDetail>>(`/api/fuel-claims/${claimId}`),
+    api.get<any>(`/api/fuel-claims/${claimId}`),
 
   getClaimsByDriver: () =>
-    api.get<ApiResponse<FuelClaimDetail[]>>("/api/fuel-claims/driver"),
+    api.get<any>("/api/fuel-claims/driver"),
 
   getClaimsForSupervisor: () =>
-    api.get<ApiResponse<FuelClaimDetail[]>>("/api/fuel-claims/status/supervisor"),
+    api.get<any>("/api/fuel-claims/status/supervisor"),
 
   getClaimsForFinance: () =>
-    api.get<ApiResponse<FuelClaimDetail[]>>("/api/fuel-claims/status/finance"),
+    api.get<any>("/api/fuel-claims/status/finance"),
 
   approveBySupervisor: (claimId: string, supervisorId: string, remarks?: string) =>
     api.post<ApiResponse<{ message: string }>>(`/api/fuel-claims/${claimId}/approve-supervisor`, {
-      supervisor_id: supervisorId,
       remarks: remarks || "",
     }),
 
   rejectBySupervisor: (claimId: string, supervisorId: string, remarks: string) =>
     api.post<ApiResponse<{ message: string }>>(`/api/fuel-claims/${claimId}/reject-supervisor`, {
-      supervisor_id: supervisorId,
       remarks,
     }),
 
   approveByFinance: (claimId: string, financeId: string, remarks?: string) =>
     api.post<ApiResponse<{ message: string }>>(`/api/fuel-claims/${claimId}/approve-finance`, {
-      finance_id: financeId,
       remarks: remarks || "",
     }),
 
   rejectByFinance: (claimId: string, financeId: string, remarks: string) =>
     api.post<ApiResponse<{ message: string }>>(`/api/fuel-claims/${claimId}/reject-finance`, {
-      finance_id: financeId,
       remarks,
     }),
 };

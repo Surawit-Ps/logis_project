@@ -53,7 +53,7 @@ func (r UserRepository) AddUser(user entity.User) error {
 		return err
 	}
 	user.Password = string(passwordHash)
-	user.Role = "Driver"
+	user.Role = "driver"
 	user.CreatedAt = time.Now()
 	enUser := EntityToUser(user)
 	result := r.db.Create(&enUser)
@@ -61,7 +61,7 @@ func (r UserRepository) AddUser(user entity.User) error {
 }
 
 func (r UserRepository) ChangeStatusUser(id string, status string) error {
-	result := r.db.Model(&entity.User{}).Where("id = ? OR username = ?", id, id).Update("status", status)
+	result := r.db.Model(&entity.User{}).Where("id = ? OR username = ?", id, id).Update("role", status)
 	return result.Error
 }
 

@@ -1,9 +1,8 @@
 import { useState } from "react";
-
-const links = ["Collections", "Atelier", "Stories", "About"];
+import { useNavigate } from "react-router-dom";
 
 export default function LuxuryNavbar() {
-  const [active, setActive] = useState("Collections");
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -30,39 +29,10 @@ export default function LuxuryNavbar() {
           color: #F5F0E8;
           letter-spacing: 0.02em;
           user-select: none;
-        }
-
-        .luxury-logo span {
-          color: #C9A96E;
-        }
-
-        .luxury-links {
-          display: flex;
-          gap: 0.25rem;
-          list-style: none;
-          margin: 0;
-          padding: 0;
-        }
-
-        .luxury-links li a {
-          text-decoration: none;
-          color: #9A9488;
-          font-size: 13px;
-          font-weight: 400;
-          letter-spacing: 0.06em;
-          padding: 6px 14px;
-          border-radius: 6px;
-          transition: all 0.2s;
-          display: block;
           cursor: pointer;
         }
 
-        .luxury-links li a:hover {
-          color: #F5F0E8;
-          background: rgba(255, 255, 255, 0.06);
-        }
-
-        .luxury-links li.active a {
+        .luxury-logo span {
           color: #C9A96E;
         }
 
@@ -110,44 +80,22 @@ export default function LuxuryNavbar() {
           display: none;
           position: absolute;
           top: calc(100% + 8px);
-          left: 0;
           right: 0;
+          width: 180px;
           background: #111;
           border: 0.5px solid rgba(201, 169, 110, 0.2);
           border-radius: 12px;
           padding: 0.75rem;
           z-index: 100;
           flex-direction: column;
-          gap: 4px;
+          gap: 8px;
         }
 
         .luxury-mobile-menu.open {
           display: flex;
         }
 
-        .luxury-mobile-menu a {
-          text-decoration: none;
-          color: #9A9488;
-          font-size: 14px;
-          letter-spacing: 0.05em;
-          padding: 10px 14px;
-          border-radius: 8px;
-          transition: all 0.2s;
-          display: block;
-          cursor: pointer;
-        }
-
-        .luxury-mobile-menu a:hover {
-          color: #F5F0E8;
-          background: rgba(255, 255, 255, 0.05);
-        }
-
-        .luxury-mobile-menu a.active {
-          color: #C9A96E;
-        }
-
         .luxury-mobile-cta {
-          margin-top: 4px;
           background: #C9A96E;
           color: #0D0D0D;
           border: none;
@@ -158,7 +106,6 @@ export default function LuxuryNavbar() {
           font-family: 'DM Sans', sans-serif;
           letter-spacing: 0.04em;
           cursor: pointer;
-          text-align: left;
           transition: opacity 0.2s;
         }
 
@@ -167,7 +114,6 @@ export default function LuxuryNavbar() {
         }
 
         @media (max-width: 600px) {
-          .luxury-links,
           .luxury-cta {
             display: none;
           }
@@ -176,32 +122,32 @@ export default function LuxuryNavbar() {
             display: flex;
           }
         }
+
+        @media (min-width: 601px) {
+          .luxury-hamburger,
+          .luxury-mobile-menu {
+            display: none !important;
+          }
+        }
       `}</style>
 
       <nav className="luxury-nav">
-        <div className="luxury-logo">
-          Maison<span>.</span>
+        <div
+          className="luxury-logo"
+          onClick={() => navigate("/")}
+        >
+          Logis<span>.</span>
         </div>
 
-        <ul className="luxury-links">
-          {links.map((link) => (
-            <li key={link} className={active === link ? "active" : ""}>
-              <a
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActive(link);
-                }}
-                href="#"
-              >
-                {link}
-              </a>
-            </li>
-          ))}
-        </ul>
+        {/* Desktop Login */}
+        <button
+          className="luxury-cta"
+          onClick={() => navigate("/login")}
+        >
+          Login
+        </button>
 
-        <button className="luxury-cta">Discover</button>
-
-        {/* Mobile hamburger */}
+        {/* Mobile Hamburger */}
         <button
           className="luxury-hamburger"
           onClick={() => setMenuOpen((o) => !o)}
@@ -212,23 +158,17 @@ export default function LuxuryNavbar() {
           <span />
         </button>
 
-        {/* Mobile dropdown */}
+        {/* Mobile Dropdown */}
         <div className={`luxury-mobile-menu ${menuOpen ? "open" : ""}`}>
-          {links.map((link) => (
-            <a
-              key={link}
-              href="#"
-              className={active === link ? "active" : ""}
-              onClick={(e) => {
-                e.preventDefault();
-                setActive(link);
-                setMenuOpen(false);
-              }}
-            >
-              {link}
-            </a>
-          ))}
-          <button className="luxury-mobile-cta">Discover</button>
+          <button
+            className="luxury-mobile-cta"
+            onClick={() => {
+              navigate("/login");
+              setMenuOpen(false);
+            }}
+          >
+            Login
+          </button>
         </div>
       </nav>
     </>

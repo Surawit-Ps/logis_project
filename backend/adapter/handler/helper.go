@@ -65,15 +65,15 @@ func parseError(err error) []string {
 }
 
 var errorStatus = map[error]int{
-	pkgErrors.ErrInvalidInput:         fiber.StatusBadRequest,
-	pkgErrors.ErrInternalServer:       fiber.StatusInternalServerError,
-	pkgErrors.ErrUnauthorized:         fiber.StatusUnauthorized,
-	pkgErrors.ErrConflict:             fiber.StatusConflict,
-	pkgErrors.ErrBadRequest:           fiber.StatusBadRequest,
-	pkgErrors.ErrUserNotFound:         fiber.StatusNotFound,
-	pkgErrors.ErrTripNotFound:         fiber.StatusNotFound,
-	pkgErrors.ErrClaimNotFound:        fiber.StatusNotFound,
-	pkgErrors.ErrAuditLogNotFound:     fiber.StatusNotFound,
+	pkgErrors.ErrInvalidInput:     fiber.StatusBadRequest,
+	pkgErrors.ErrInternalServer:   fiber.StatusInternalServerError,
+	pkgErrors.ErrUnauthorized:     fiber.StatusUnauthorized,
+	pkgErrors.ErrConflict:         fiber.StatusConflict,
+	pkgErrors.ErrBadRequest:       fiber.StatusBadRequest,
+	pkgErrors.ErrUserNotFound:     fiber.StatusNotFound,
+	pkgErrors.ErrTripNotFound:     fiber.StatusNotFound,
+	pkgErrors.ErrClaimNotFound:    fiber.StatusNotFound,
+	pkgErrors.ErrAuditLogNotFound: fiber.StatusNotFound,
 }
 
 type authResponse struct {
@@ -104,24 +104,36 @@ func newErrorResponse(errMsg []string) errorResponse {
 ///////role checker helper function///////
 
 func IsSupervisor(ctx *fiber.Ctx) error {
-	role := ctx.Get("UserRole")
-	if role != "supervisor" {
+	role := ctx.Locals("role")
+	if role == nil {
+		return pkgErrors.ErrForbidden
+	}
+	roleStr := role.(string)
+	if roleStr != "supervisor" {
 		return pkgErrors.ErrForbidden
 	}
 	return nil
 }
 
 func IsDriver(ctx *fiber.Ctx) error {
-	role := ctx.Get("UserRole")
-	if role != "driver" {
+	role := ctx.Locals("role")
+	if role == nil {
+		return pkgErrors.ErrForbidden
+	}
+	roleStr := role.(string)
+	if roleStr != "driver" {
 		return pkgErrors.ErrForbidden
 	}
 	return nil
 }
 
 func IsFinance(ctx *fiber.Ctx) error {
-	role := ctx.Get("UserRole")
-	if role != "finance" {
+	role := ctx.Locals("role")
+	if role == nil {
+		return pkgErrors.ErrForbidden
+	}
+	roleStr := role.(string)
+	if roleStr != "finance" {
 		return pkgErrors.ErrForbidden
 	}
 	return nil
