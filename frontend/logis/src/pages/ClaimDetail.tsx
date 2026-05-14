@@ -39,14 +39,14 @@ const ClaimDetail: React.FC = () => {
   };
 
   const handleApprove = async () => {
-    if (!claimId) return;
+    if (!claimId || !userId) return;
 
     setActionLoading(true);
     try {
-      if (userRole === "supervisor") {
-        await fuelClaimAPI.approveBySupervisor(claimId, userId || "", remarks);
-      } else if (userRole === "finance") {
-        await fuelClaimAPI.approveByFinance(claimId, userId || "", remarks);
+      if (userRole === "Supervisor") {
+        await fuelClaimAPI.approveBySupervisor(claimId, userId, remarks);
+      } else if (userRole === "Finance") {
+        await fuelClaimAPI.approveByFinance(claimId, userId, remarks);
       }
       message.success("Claim approved successfully!");
       setRemarksVisible(false);
@@ -61,17 +61,17 @@ const ClaimDetail: React.FC = () => {
   };
 
   const handleReject = async () => {
-    if (!claimId || !remarks) {
+    if (!claimId || !userId || !remarks) {
       message.warning("Please provide rejection reason");
       return;
     }
 
     setActionLoading(true);
     try {
-      if (userRole === "supervisor") {
-        await fuelClaimAPI.rejectBySupervisor(claimId, userId || "", remarks);
-      } else if (userRole === "finance") {
-        await fuelClaimAPI.rejectByFinance(claimId, userId || "", remarks);
+      if (userRole === "Supervisor") {
+        await fuelClaimAPI.rejectBySupervisor(claimId, userId, remarks);
+      } else if (userRole === "Finance") {
+        await fuelClaimAPI.rejectByFinance(claimId, userId, remarks);
       }
       message.success("Claim rejected successfully!");
       setRemarksVisible(false);
@@ -87,8 +87,8 @@ const ClaimDetail: React.FC = () => {
 
   const canApprove = () => {
     if (!claim) return false;
-    if (userRole === "supervisor" && claim.status === "Pending") return true;
-    if (userRole === "finance" && claim.status === "Approved by Supervisor") return true;
+    if (userRole === "Supervisor" && claim.status === "Pending") return true;
+    if (userRole === "Finance" && claim.status === "Approved by Supervisor") return true;
     return false;
   };
 
@@ -131,27 +131,10 @@ const ClaimDetail: React.FC = () => {
                       <strong>Receipt Ref:</strong> {claim.receipt_ref}
                     </Col>
                     <Col span={24}>
-                      <strong>Receipt:</strong>
-
-                      <div style={{ marginTop: 10 }}>
-                        <img
-                          src={claim.receipt_url}
-                          alt="Receipt"
-                          style={{
-                            width: "100%",
-                            maxWidth: 400,
-                            borderRadius: 8,
-                            border: "1px solid #ddd",
-                            cursor: "pointer",
-                          }}
-                          onClick={() =>
-                            window.open(
-                              claim.receipt_url,
-                              "_blank"
-                            )
-                          }
-                        />
-                      </div>
+                      <strong>Receipt URL:</strong>{" "}
+                      <a href={claim.receipt_url} target="_blank" rel="noopener noreferrer">
+                        View Receipt
+                      </a>
                     </Col>
                   </Row>
                 </div>

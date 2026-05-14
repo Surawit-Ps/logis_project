@@ -3,11 +3,9 @@ package handler
 import (
 	"backend/core/dto"
 	"backend/core/services"
-	"fmt"
-
-	e "backend/pkg/errs"
-
+	
 	"github.com/gofiber/fiber/v2"
+	e "backend/pkg/errs"
 )
 
 type FuelClaimHandler struct {
@@ -18,6 +16,7 @@ func NewFuelClaimHandler(service services.FuelClaimService) FuelClaimHandler {
 	return FuelClaimHandler{service: service}
 }
 
+
 func (h FuelClaimHandler) SubmitClaim(c *fiber.Ctx) error {
 	var req dto.SubmitClaimRequest
 
@@ -25,14 +24,6 @@ func (h FuelClaimHandler) SubmitClaim(c *fiber.Ctx) error {
 		return handleError(c, err)
 	}
 
-	userID := c.Locals("userID")
-
-	driverID, ok := userID.(string)
-	if !ok || driverID == "" {
-		return handleError(c, e.ErrBadRequest)
-	}
-	req.DriverID = driverID
-	fmt.Printf("SubmitClaim request: %+v\n", req)
 	claim, err := h.service.SubmitClaim(req)
 	if err != nil {
 		return handleError(c, err)
@@ -40,6 +31,7 @@ func (h FuelClaimHandler) SubmitClaim(c *fiber.Ctx) error {
 
 	return newResponseSuccess(c, claim)
 }
+
 
 func (h FuelClaimHandler) GetClaimWithAuditTrail(c *fiber.Ctx) error {
 	claimID := c.Params("claimID")
@@ -56,21 +48,16 @@ func (h FuelClaimHandler) GetClaimWithAuditTrail(c *fiber.Ctx) error {
 	return newResponseSuccess(c, detail)
 }
 
+
 func (h FuelClaimHandler) ApproveBySupervisor(c *fiber.Ctx) error {
 	errf := IsSupervisor(c)
 	if errf != nil {
-		return handleError(c, errf)
-	}
-
-	userID := c.Locals("userID")
-
-	supervisorID, ok := userID.(string)
-	if !ok || supervisorID == "" {
-		return handleError(c, e.ErrBadRequest)
+		return handleError(c,errf)
 	}
 
 	claimID := c.Params("claimID")
 	var req struct {
+		SupervisorID string `json:"supervisor_id" binding:"required"`
 		Remarks      string `json:"remarks"`
 	}
 
@@ -78,7 +65,7 @@ func (h FuelClaimHandler) ApproveBySupervisor(c *fiber.Ctx) error {
 		return handleError(c, err)
 	}
 
-	err := h.service.ApproveBySupervisor(supervisorID, claimID, req.Remarks)
+	err := h.service.ApproveBySupervisor(req.SupervisorID, claimID, req.Remarks)
 	if err != nil {
 		return handleError(c, err)
 	}
@@ -86,28 +73,24 @@ func (h FuelClaimHandler) ApproveBySupervisor(c *fiber.Ctx) error {
 	return newResponseSuccessMessage(c, "Claim approved by supervisor successfully")
 }
 
+
 func (h FuelClaimHandler) RejectBySupervisor(c *fiber.Ctx) error {
 	errf := IsSupervisor(c)
 	if errf != nil {
 		return handleError(c, errf)
 	}
 
-	userID := c.Locals("userID")
-	supervisorID, ok := userID.(string)
-	if !ok || supervisorID == "" {
-		return handleError(c, e.ErrBadRequest)
-	}
-
 	claimID := c.Params("claimID")
 	var req struct {
-		Remarks string `json:"remarks" binding:"required"`
+		SupervisorID string `json:"supervisor_id" binding:"required"`
+		Remarks      string `json:"remarks" binding:"required"`
 	}
 
 	if err := c.BodyParser(&req); err != nil {
 		return handleError(c, err)
 	}
 
-	err := h.service.RejectBySupervisor(supervisorID, claimID, req.Remarks)
+	err := h.service.RejectBySupervisor(req.SupervisorID, claimID, req.Remarks)
 	if err != nil {
 		return handleError(c, err)
 	}
@@ -115,20 +98,15 @@ func (h FuelClaimHandler) RejectBySupervisor(c *fiber.Ctx) error {
 	return newResponseSuccessMessage(c, "Claim rejected by supervisor successfully")
 }
 
+
 func (h FuelClaimHandler) ApproveByFinance(c *fiber.Ctx) error {
 	errf := IsFinance(c)
 	if errf != nil {
-		return handleError(c, errf)
+		return handleError(c,errf)
 	}
 	claimID := c.Params("claimID")
-
-	userID := c.Locals("userID")
-	financeID, ok := userID.(string)
-	if !ok || financeID == "" {
-		return handleError(c, e.ErrBadRequest)
-	}
-
 	var req struct {
+		FinanceID string `json:"finance_id" binding:"required"`
 		Remarks   string `json:"remarks"`
 	}
 
@@ -136,7 +114,7 @@ func (h FuelClaimHandler) ApproveByFinance(c *fiber.Ctx) error {
 		return handleError(c, err)
 	}
 
-	err := h.service.ApproveByFinance(financeID, claimID, req.Remarks)
+	err := h.service.ApproveByFinance(req.FinanceID, claimID, req.Remarks)
 	if err != nil {
 		return handleError(c, err)
 	}
@@ -144,20 +122,17 @@ func (h FuelClaimHandler) ApproveByFinance(c *fiber.Ctx) error {
 	return newResponseSuccessMessage(c, "Claim approved by finance successfully")
 }
 
-func (h FuelClaimHandler) RejectByFinance(c *fiber.Ctx) error {
-	userID := c.Locals("userID")
-	financeID, ok := userID.(string)
-	if !ok || financeID == "" {
-		return handleError(c, e.ErrBadRequest)
-	}
 
+func (h FuelClaimHandler) RejectByFinance(c *fiber.Ctx) error {
+	
 	errf := IsFinance(c)
 	if errf != nil {
-		return handleError(c, errf)
+		return handleError(c,errf)
 	}
 
 	claimID := c.Params("claimID")
 	var req struct {
+		FinanceID string `json:"finance_id" binding:"required"`
 		Remarks   string `json:"remarks" binding:"required"`
 	}
 
@@ -165,7 +140,7 @@ func (h FuelClaimHandler) RejectByFinance(c *fiber.Ctx) error {
 		return handleError(c, err)
 	}
 
-	err := h.service.RejectByFinance(financeID, claimID, req.Remarks)
+	err := h.service.RejectByFinance(req.FinanceID, claimID, req.Remarks)
 	if err != nil {
 		return handleError(c, err)
 	}
@@ -174,10 +149,8 @@ func (h FuelClaimHandler) RejectByFinance(c *fiber.Ctx) error {
 }
 
 func (h FuelClaimHandler) GetClaimsByDriverID(c *fiber.Ctx) error {
-	userID := c.Locals("userID")
-
-	driverID, ok := userID.(string)
-	if !ok || driverID == "" {
+	driverID := c.Get("userID")
+	if driverID == "" {
 		return handleError(c, e.ErrBadRequest)
 	}
 	claims, err := h.service.GetClaimsByDriverID(driverID)
@@ -188,7 +161,7 @@ func (h FuelClaimHandler) GetClaimsByDriverID(c *fiber.Ctx) error {
 }
 
 func (h FuelClaimHandler) GetClaimsForSupervisor(c *fiber.Ctx) error {
-	claims, err := h.service.GetAllClaimsByStatus("Pending")
+	claims, err := h.service.GetAllClaimsByStatus("pending")
 	if err != nil {
 		return handleError(c, err)
 	}

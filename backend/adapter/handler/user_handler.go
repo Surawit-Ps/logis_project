@@ -18,11 +18,12 @@ func NewUserHandler(service services.UserService) UserHandler {
 	return UserHandler{service: service}
 }
 
+
 func (h UserHandler) Register(c *fiber.Ctx) error {
-	errf := IsFinance(c)
-	if errf != nil {
-		return handleError(c, errf)
-	}
+	// errf := IsFinance(c)
+	// if errf != nil {
+	// 	return handleError(c, errf)
+	// }
 
 	var req struct {
 		Username string `json:"username" binding:"required,min=3"`
@@ -37,7 +38,7 @@ func (h UserHandler) Register(c *fiber.Ctx) error {
 		ID:       uuid.New().String(),
 		UserName: req.Username,
 		Password: req.Password,
-		Role:     "driver",
+		Role:     "Driver",
 	}
 
 	err := h.service.CreateUser(user)
@@ -47,6 +48,7 @@ func (h UserHandler) Register(c *fiber.Ctx) error {
 
 	return newResponseSuccessMessage(c, "User registered successfully")
 }
+
 
 func (h UserHandler) Login(c *fiber.Ctx) error {
 	var req struct {
@@ -63,25 +65,20 @@ func (h UserHandler) Login(c *fiber.Ctx) error {
 		return handleError(c, err)
 	}
 
-	middleware.SetCookies(c, token)
+	middleware.SetCookies(c,token)
 
-	// Store user info for frontend
-	return c.JSON(fiber.Map{
-		"success": true,
-		"data": fiber.Map{
-			"token":    token,
-			"user_id":  user.ID,
-			"username": user.UserName,
-			"role":     user.Role,
-		},
-	})
+	c.Set("UserID", user.ID)
+	c.Set("UserRole", user.Role)
+
+	return newResponseSuccess(c,token)
 }
 
+
 func (h UserHandler) ChangeStatus(c *fiber.Ctx) error {
-	errf := IsFinance(c)
-	if errf != nil {
-		return handleError(c, errf)
-	}
+	// errf := IsFinance(c)
+	// if errf != nil {
+	// 	return handleError(c, errf)
+	// }
 	userID := c.Params("userID")
 	var req struct {
 		Status string `json:"status" binding:"required"`

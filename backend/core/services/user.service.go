@@ -1,22 +1,20 @@
 package services
 
-import (
-	"backend/core/entity"
-	"backend/core/middleware"
-	"backend/core/port"
-	"errors"
-)
+import ("backend/core/entity"
+"backend/core/port"
+"backend/core/middleware"
+"errors")
 
-type UserService struct {
+type UserService struct{
 	userRepo port.UserRepository
 }
 
-func NewUserService(userRepo port.UserRepository) UserService {
-	return UserService{userRepo: userRepo}
+func NewUserService(userRepo port.UserRepository)UserService{
+	return UserService{userRepo:userRepo}
 }
 
 func (s UserService) CreateUser(user entity.User) error {
-
+	
 	return s.userRepo.AddUser(user)
 }
 
@@ -29,15 +27,10 @@ func (s UserService) Login(username, password string) (*entity.User, string, err
 	if err != nil {
 		return nil, "", err
 	}
-	if user == nil {
-		return nil, "", errors.New("user not found")
-	}
 	ok := middleware.CheckPasswordHash([]byte(password), []byte(user.Password))
 	if !ok {
 		return nil, "", errors.New("invalid credentials")
 	}
-
-	// Normalize role to lowercase for frontend/api consistency
 
 	jwtWrapper := middleware.JwtWrapper{
 		SecretKey:       "SvNQpBN8y3qlVrsGAYYWoJJk56LtzFHx",

@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Form, Input, InputNumber, Button, Card, message, Spin, Upload } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
-import type { RcFile } from "antd/es/upload";
+import { Form, Input, InputNumber, Button, Card, message, Spin } from "antd";
 import { fuelClaimAPI } from "../services/api/apiClient";
 import "../styles/forms.css";
 
@@ -10,63 +8,35 @@ const SubmitClaim: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
-  const [receiptBase64, setReceiptBase64] = useState<string>("");
-  const [previewUrl, setPreviewUrl] = useState<string>("");
 
   const tripId = location.state?.tripId || "";
-
-  const handleImageUpload = (file: RcFile) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      const base64String = reader.result as string;
-      setReceiptBase64(base64String);
-      setPreviewUrl(base64String);
-    };
-    return false; // Prevent auto upload
-  };
 
   const onFinish = async (values: {
     receiptRef: string;
     amount: number;
+    receiptUrl: string;
   }) => {
     if (!tripId) {
       message.error("Trip ID is required");
       return;
     }
 
-    if (!receiptBase64) {
-      message.error("Please upload a receipt image");
-      return;
-    }
-
     setLoading(true);
     try {
-      const response = await fuelClaimAPI.submitClaim({
-        trip_id: tripId,
-        amount: values.amount,
-        receipt_ref: values.receiptRef,
-        receipt_url: receiptBase64,
-      });
+      const response = await fuelClaimAPI.submitClaim(
+        tripId,
+        values.amount,
+        values.receiptRef,
+        values.receiptUrl
+      );
 
-      // Response structure: { success: boolean, message: string, data: {...} }
-      if (response.status === 200 && response.data?.success) {
+      if (response.data.success) {
         message.success("Fuel claim submitted successfully!");
-        // Reset form
-        setReceiptBase64("");
-        setPreviewUrl("");
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 1000);
-      } else {
-        message.error(response.data?.message || "Failed to submit fuel claim");
+        navigate("/dashboard");
       }
-    } catch (error: any) {
-      const errorMsg = error.response?.data?.message?.[0] || 
-                      error.response?.data?.message || 
-                      "Failed to submit fuel claim";
-      message.error(Array.isArray(errorMsg) ? errorMsg[0] : errorMsg);
-      console.error("Full error:", error);
+    } catch (error) {
+      message.error("Failed to submit fuel claim");
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -112,28 +82,14 @@ const SubmitClaim: React.FC = () => {
             </Form.Item>
 
             <Form.Item
-              label="Receipt Image"
-              required
+              label="Receipt URL"
+              name="receiptUrl"
+              rules={[
+                { required: true, message: "Please enter receipt URL" },
+                { type: "url", message: "Please enter a valid URL" },
+              ]}
             >
-              <Upload
-                maxCount={1}
-                accept="image/*"
-                beforeUpload={handleImageUpload}
-                showUploadList={false}
-              >
-                <Button icon={<UploadOutlined />} size="large" block>
-                  Click to Upload Receipt Image
-                </Button>
-              </Upload>
-              {previewUrl && (
-                <div style={{ marginTop: "16px" }}>
-                  <img 
-                    src={previewUrl} 
-                    alt="Preview" 
-                    style={{ maxWidth: "100%", maxHeight: "200px", borderRadius: "4px" }}
-                  />
-                </div>
-              )}
+              <Input placeholder="https://example.com/receipt.jpg" size="large" />
             </Form.Item>
 
             <Button type="primary" htmlType="submit" block size="large">

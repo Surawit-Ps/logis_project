@@ -4,7 +4,7 @@ import ("backend/core/entity"
 	"backend/core/dto")
 
 type FuelClaimRepository interface {
-	AddFuelClaim(claim entity.FuelClaims) error
+	CreateFuelClaim(claim entity.FuelClaims) error
 	UpdateFuelClaim(claim entity.FuelClaims) error
 	FindFuelClaimByID(id string) (*entity.FuelClaims, error)
 	FindClaimByDriverID(driverID string) ([]entity.FuelClaims, error)

@@ -107,6 +107,12 @@ func (r FuelClaimRepository) FindClaimByTripID(tripID string) ([]entity.FuelClai
 }
 
 
+func (r FuelClaimRepository) CreateFuelClaim(claim entity.FuelClaims) error {
+	enClaim := EntityToFuelClaim(claim)
+	result := r.db.Create(&enClaim)
+	return result.Error
+}
+
 func (r FuelClaimRepository) UpdateFuelClaim(claim entity.FuelClaims) error {
 	enClaim := EntityToFuelClaim(claim)
 	result := r.db.Save(&enClaim)

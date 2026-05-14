@@ -29,7 +29,7 @@ const CreateTrip: React.FC = () => {
 
       if (response.data.success) {
         message.success("Trip created successfully!");
-        navigate("/dashboard", { state: { tripId: response.data.data?.id } });
+        navigate("/submit-claim", { state: { tripId: response.data.data?.id } });
       }
     } catch (error) {
       message.error("Failed to create trip");

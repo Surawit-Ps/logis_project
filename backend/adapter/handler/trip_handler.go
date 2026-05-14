@@ -4,6 +4,7 @@ import (
 	"backend/core/entity"
 	"backend/core/services"
 	e "backend/pkg/errs"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -78,12 +79,16 @@ func (h TripHandler) FindTrip(c *fiber.Ctx) error {
 
 func (h TripHandler) GetAllTripsByDriverID(c *fiber.Ctx,) error {
 
+	fmt.Println("=== GetAllTripsByDriverID ===")
+
 	userID := c.Locals("userID")
 
 	driverID, ok := userID.(string)
 	if !ok || driverID == "" {
 		return handleError(c, e.ErrBadRequest)
 	}
+
+	fmt.Printf("userID: %#v\n", driverID)
 
 	trips, err := h.service.GetAllTripsByDriverID(
 		driverID,
