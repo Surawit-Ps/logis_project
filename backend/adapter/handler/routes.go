@@ -1,8 +1,10 @@
 package handler
 
 import (
-	"backend/core/services"
 	"backend/core/middleware"
+	"backend/core/services"
+	"backend/pkg/redis"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -16,11 +18,12 @@ func NewRoutes(
 	fuelClaimService services.FuelClaimService,
 	tripService services.TripService,
 	userService services.UserService,
+	redisClient *redis.Redis,
 ) Routes {
 	return Routes{
 		fuelClaimHandler: NewFuelClaimHandler(fuelClaimService),
 		tripHandler:      NewTripHandler(tripService),
-		userHandler:      NewUserHandler(userService),
+		userHandler:      NewUserHandler(userService, redisClient),
 	}
 }
 
@@ -29,16 +32,15 @@ func (r Routes) RegisterRoutes(app *fiber.App) {
 	app.Post("/login", r.userHandler.Login)
 	auth := middleware.Authorizes()
 	userGroup := app.Group("/api/users", auth)
-	userGroup.Post("/register", r.userHandler.Register,auth)
+	userGroup.Post("/register", r.userHandler.Register, auth)
 	userGroup.Patch("/:userID/status", r.userHandler.ChangeStatus, auth)
 
-
-	fuelGroup := app.Group("/api/fuel-claims")
+	fuelGroup := app.Group("/api/fuel-claims", auth)
 	fuelGroup.Post("/", r.fuelClaimHandler.SubmitClaim)
-	fuelGroup.Get("/:claimID", r.fuelClaimHandler.GetClaimWithAuditTrail)
 	fuelGroup.Get("/driver", r.fuelClaimHandler.GetClaimsByDriverID)
 	fuelGroup.Get("/status/supervisor", r.fuelClaimHandler.GetClaimsForSupervisor)
 	fuelGroup.Get("/status/finance", r.fuelClaimHandler.GetClaimsForFinance)
+	fuelGroup.Get("/:claimID", r.fuelClaimHandler.GetClaimWithAuditTrail)
 
 	// Supervisor approval
 	fuelGroup.Post("/:claimID/approve-supervisor", r.fuelClaimHandler.ApproveBySupervisor)
@@ -54,7 +56,7 @@ func (r Routes) RegisterRoutes(app *fiber.App) {
 	tripGroup.Get("/driver", r.tripHandler.GetAllTripsByDriverID)
 	tripGroup.Get("/:tripID", r.tripHandler.GetTrip)
 	tripGroup.Get("/find/:tripID", r.tripHandler.FindTrip)
-	
+
 	// Users routes
-	
+
 }

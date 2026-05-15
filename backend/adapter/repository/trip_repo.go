@@ -3,7 +3,7 @@ package repository
 import (
 	"backend/core/entity"
 	"errors"
-	"fmt"
+
 	"time"
 
 	"github.com/google/uuid"
@@ -84,7 +84,6 @@ func (r TripRepository) FindTripByID(id string) (*entity.Trips, error) {
 
 func (r TripRepository) GetAllTripsByDriverID(driverID string) ([]entity.Trips, error) {
 	var trips []Trip
-	fmt.Println("Driver ID in Repo:", driverID) // Debug log
 	result := r.db.Where("driver_id = ?", driverID).Find(&trips)
 	if result.Error != nil {
 		return nil, result.Error

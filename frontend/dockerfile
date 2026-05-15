@@ -1,0 +1,31 @@
+# Build stage
+FROM node:22-alpine AS builder
+
+WORKDIR /app
+
+# Copy logis contents directly to /app
+COPY logis/ .
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Install dependencies
+RUN CI=true pnpm install --frozen-lockfile
+
+# Build the app
+RUN pnpm run build
+
+# Production stage
+FROM nginx:alpine
+
+# Copy built files to nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port
+EXPOSE 80
+
+# Command to run
+CMD ["nginx", "-g", "daemon off;"]

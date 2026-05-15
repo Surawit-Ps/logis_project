@@ -32,7 +32,6 @@ const statusColor: Record<string, { bg: string; text: string; dot: string }> = {
 
 export default function FuelClaimHome() {
   const [active, setActive] = useState("Dashboard");
-  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div style={{ background: "#090909", minHeight: "100vh", fontFamily: "'DM Sans', sans-serif", color: "#F5F0E8" }}>

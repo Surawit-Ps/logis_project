@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
+	"backend/core/env"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -21,9 +21,9 @@ func Authorizes() fiber.Handler {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "Unauthorized"})
 		}
 		jwtWrapper := JwtWrapper{
-			SecretKey:       "SvNQpBN8y3qlVrsGAYYWoJJk56LtzFHx",
-			Issuer:          "authService",
-			ExpirationHours: 24,
+			SecretKey:       env.LoadConfig().SecretKey,
+			Issuer:          env.LoadConfig().Issuer,
+			ExpirationHours: env.LoadConfig().ExpirationHours,
 		}
 		// `token` now contains the raw JWT (either trimmed from "Bearer " header or read from cookie)
 		claims, err := jwtWrapper.ValidateToken(token)

@@ -1,20 +1,25 @@
 package services
 
-import ("backend/core/entity"
-"backend/core/port"
-"backend/core/middleware"
-"errors")
+import (
+	"backend/core/entity"
+	"backend/core/middleware"
+	"backend/core/port"
+	"errors"
+	"backend/core/env"
+	
+)
 
-type UserService struct{
+type UserService struct {
 	userRepo port.UserRepository
+	
 }
 
-func NewUserService(userRepo port.UserRepository)UserService{
-	return UserService{userRepo:userRepo}
+func NewUserService(userRepo port.UserRepository ) UserService {
+	return UserService{userRepo: userRepo}
 }
 
 func (s UserService) CreateUser(user entity.User) error {
-	
+
 	return s.userRepo.AddUser(user)
 }
 
@@ -27,15 +32,19 @@ func (s UserService) Login(username, password string) (*entity.User, string, err
 	if err != nil {
 		return nil, "", err
 	}
+	if user == nil {
+		return nil, "", errors.New("user not found")
+	}
 	ok := middleware.CheckPasswordHash([]byte(password), []byte(user.Password))
 	if !ok {
-		return nil, "", errors.New("invalid credentials")
+
+		return nil, "", errors.New("invalid password")
 	}
 
 	jwtWrapper := middleware.JwtWrapper{
-		SecretKey:       "SvNQpBN8y3qlVrsGAYYWoJJk56LtzFHx",
-		Issuer:          "authService",
-		ExpirationHours: 24,
+		SecretKey:       env.LoadConfig().SecretKey,
+		Issuer:          env.LoadConfig().Issuer,
+		ExpirationHours: env.LoadConfig().ExpirationHours,
 	}
 
 	token, err := jwtWrapper.GenerateToken(user.ID, user.Role)

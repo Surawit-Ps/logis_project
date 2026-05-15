@@ -19,19 +19,11 @@ export class CookieService {
 
     expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
 
-    document.cookie = `
-      ${name}=${encodeURIComponent(value)};
-      expires=${expires.toUTCString()};
-      path=${path}
-    `;
+    document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=${path}`;
   }
 
   // ✅ ลบ Cookie
   static delete(name: string, path: string = "/"): void {
-    document.cookie = `
-      ${name}=;
-      expires=Thu, 01 Jan 1970 00:00:00 UTC;
-      path=${path}
-    `;
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=${path}`;
   }
 }

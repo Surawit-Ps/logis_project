@@ -33,13 +33,15 @@ func (s FuelClaimService) SubmitClaim(req dto.SubmitClaimRequest) (*entity.FuelC
 
 	claim := entity.FuelClaims{
 		ID:         uuid.New().String(),
+		DriverId:   req.DriverID,
 		TripId:     req.TripID,
 		Amount:     req.Amount,
 		ReceiptRef: req.ReceiptRef,
+		ReceiptUrl: req.ReceiptURL,
 		Status:     "Pending",
 		CreatedAt:  time.Now(),
 	}
-	err = s.claimRepo.CreateFuelClaim(claim)
+	err = s.claimRepo.AddFuelClaim(claim)
 	if err != nil {
 		return nil, err
 	}
@@ -51,17 +53,29 @@ func (s FuelClaimService) GetClaimWithAuditTrail(claimID string) (dto.FuelClaimD
 	if err != nil {
 		return dto.FuelClaimDetail{}, err
 	}
+	if claim == nil {
+		return dto.FuelClaimDetail{}, fmt.Errorf("claim not found")
+	}
+
 	auditLogs, err := s.auditRepo.FindByClaimID(claimID)
 	if err != nil {
 		return dto.FuelClaimDetail{}, err
 	}
-	driver, err := s.userRepo.FindUser(claim.DriverId)
+
+	driver, err := s.userRepo.GetUserByID(claim.DriverId)
 	if err != nil {
 		return dto.FuelClaimDetail{}, err
 	}
+	if driver == nil {
+		return dto.FuelClaimDetail{}, fmt.Errorf("driver not found")
+	}
+
 	trip, err := s.tripRepo.GetATrip(claim.TripId)
 	if err != nil {
 		return dto.FuelClaimDetail{}, err
+	}
+	if trip == nil {
+		return dto.FuelClaimDetail{}, fmt.Errorf("trip not found")
 	}
 
 	// Loop เพื่อแปลง entity.AuditLogs เป็น dto.AuditLogInfo
@@ -201,18 +215,92 @@ func (s FuelClaimService) RejectByFinance(financeID string, claimID string, rema
 	})
 }
 
-func (s FuelClaimService) GetClaimsByDriverID(driverID string) ([]entity.FuelClaims, error) {
-	return s.claimRepo.FindClaimByDriverID(driverID)
+func (s FuelClaimService) GetClaimsByDriverID(driverID string) ([]dto.FuelClaimDetail, error) {
+	claims, err := s.claimRepo.FindClaimByDriverID(driverID)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []dto.FuelClaimDetail
+	for _, claim := range claims {
+		driver, _ := s.userRepo.FindUser(claim.DriverId)
+		trip, _ := s.tripRepo.GetATrip(claim.TripId)
+
+		driverInfo := dto.DriverInfo{ID: "", Username: ""}
+		if driver != nil {
+			driverInfo = dto.DriverInfo{
+				ID:       driver.ID,
+				Username: driver.UserName,
+			}
+		}
+
+		tripInfo := dto.TripInfo{ID: "", Origin: "", Destination: "", Status: ""}
+		if trip != nil {
+			tripInfo = dto.TripInfo{
+				ID:          trip.ID,
+				Origin:      trip.Origin,
+				Destination: trip.Destination,
+				Status:      trip.Status,
+			}
+		}
+
+		results = append(results, dto.FuelClaimDetail{
+			ID:         claim.ID,
+			Status:     claim.Status,
+			Amount:     claim.Amount,
+			ReceiptRef: claim.ReceiptRef,
+			ReceiptURL: claim.ReceiptUrl,
+			CreatedAt:  claim.CreatedAt,
+			UpdatedAt:  claim.UpdatedAt,
+			Driver:     driverInfo,
+			Trip:       tripInfo,
+			AuditTrail: []dto.AuditLogInfo{},
+		})
+	}
+	return results, nil
 }
 
-func (s FuelClaimService) GetClaimsByTripID(tripID string) ([]entity.FuelClaims, error) {
-	return s.claimRepo.FindClaimByTripID(tripID)
-}
+func (s FuelClaimService) GetAllClaimsByStatus(status string) ([]dto.FuelClaimDetail, error) {
+	claims, err := s.claimRepo.FindClaimByStatus(status)
+	if err != nil {
+		return nil, err
+	}
 
-func (s FuelClaimService) GetClaimByID(id string) (*entity.FuelClaims, error) {
-	return s.claimRepo.FindFuelClaimByID(id)
-}
+	var results []dto.FuelClaimDetail
+	for _, claim := range claims {
+		driver, _ := s.userRepo.FindUser(claim.DriverId)
+		trip, _ := s.tripRepo.GetATrip(claim.TripId)
 
-func (s FuelClaimService) GetAllClaimsByStatus(status string) ([]entity.FuelClaims, error) {
-	return s.claimRepo.FindClaimByStatus(status)
+		driverInfo := dto.DriverInfo{ID: "", Username: ""}
+		if driver != nil {
+			driverInfo = dto.DriverInfo{
+				ID:       driver.ID,
+				Username: driver.UserName,
+			}
+		}
+
+		tripInfo := dto.TripInfo{ID: "", Origin: "", Destination: "", Status: ""}
+		if trip != nil {
+			tripInfo = dto.TripInfo{
+				ID:          trip.ID,
+				Origin:      trip.Origin,
+				Destination: trip.Destination,
+				Status:      trip.Status,
+			}
+		}
+
+		results = append(results, dto.FuelClaimDetail{
+			ID:         claim.ID,
+			Status:     claim.Status,
+			Amount:     claim.Amount,
+			ReceiptRef: claim.ReceiptRef,
+			ReceiptURL: claim.ReceiptUrl,
+			CreatedAt:  claim.CreatedAt,
+			UpdatedAt:  claim.UpdatedAt,
+			Driver:     driverInfo,
+			Trip:       tripInfo,
+			AuditTrail: []dto.AuditLogInfo{},
+		})
+	}
+	return results, nil
 }
