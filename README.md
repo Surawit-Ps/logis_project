@@ -24,7 +24,7 @@ user login
 สิ่งที่ทำไป - frontend ที่เกิด bug,
           การจัดการ secret key ผ่าน env,
           redis จัดการ rate limit,
-          docker base สำหรับ run in 1 command (in progress),
+          docker base สำหรับ run in 1 command
           RBAC ครบทุก handler
 
 workflow
@@ -37,5 +37,8 @@ user:s1 login -> ตรวจสอบ fuel claim -> approve/reject ครั้
 
 risk ที่อาจจะเจอ
 การยิง request เป็นจำนวนมากที่อาจเกิดปัญหา
-          
+
+docker run สามารถได้ ใน branch docker ที่มีการ config สำหรับ run (localhost:5173)
+- docker compose up --build
+  
         
