@@ -1,5 +1,4 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Layout } from "antd";
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
@@ -12,11 +11,6 @@ import FuelClaimHome from "./pages/Home";
 import "./App.css";
 
 const { Content } = Layout;
-
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const token = localStorage.getItem("token");
-  return token ? <>{children}</> : <Navigate to="/" />;
-}
 
 function App() {
   const isAuthenticated = !!localStorage.getItem("token");

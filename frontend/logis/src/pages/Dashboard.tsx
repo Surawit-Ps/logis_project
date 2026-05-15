@@ -26,6 +26,9 @@ const Dashboard: React.FC = () => {
   const [searchId, setSearchId] = useState("");
 
   const userRole = localStorage.getItem("user_role");
+  console.log("User role from localStorage:", userRole);
+
+  
 
   useEffect(() => {
     loadClaimsByRole();
@@ -40,8 +43,8 @@ const Dashboard: React.FC = () => {
 
       console.log("Loading claims for role:", userRole);
 
-      if (userRole === "Driver") {
-        // โหลด claims ของ driver
+      if (userRole?.toLowerCase() === "driver") {
+  
         try {
           response =
             await fuelClaimAPI.getClaimsByDriver();
@@ -74,12 +77,22 @@ const Dashboard: React.FC = () => {
         } catch (err) {
           console.error("Trips error:", err);
         }
-      } else if (userRole === "Supervisor") {
+      } else if (userRole?.toLowerCase() === "supervisor") {
         response =
           await fuelClaimAPI.getClaimsForSupervisor();
-      } else if (userRole === "Finance") {
+
+        console.log(
+          "Supervisor claims response:",
+          response
+        );
+      } else if (userRole?.toLowerCase() === "finance") {
         response =
           await fuelClaimAPI.getClaimsForFinance();
+
+        console.log(
+          "Finance claims response:",
+          response
+        );
       } else {
         message.warning("Unknown user role");
         return;
@@ -97,16 +110,24 @@ const Dashboard: React.FC = () => {
         );
       }
     } catch (error) {
-      message.error("Failed to load dashboard data");
+      message.error(
+        "Failed to load dashboard data"
+      );
+
       console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadClaim = async (claimId: string) => {
+  const loadClaim = async (
+    claimId: string
+  ) => {
     if (!claimId.trim()) {
-      message.warning("Please enter a claim ID");
+      message.warning(
+        "Please enter a claim ID"
+      );
+
       return;
     }
 
@@ -126,7 +147,8 @@ const Dashboard: React.FC = () => {
         if (
           !claims.find(
             (c) =>
-              c.id === response.data.data?.id
+              c.id ===
+              response.data.data?.id
           )
         ) {
           setClaims([
@@ -136,18 +158,26 @@ const Dashboard: React.FC = () => {
         }
 
         setSearchId("");
+
         message.success("Claim loaded!");
       }
     } catch (error) {
       message.error("Claim not found");
+
       console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    if (status.includes("Approved by Finance"))
+  const getStatusColor = (
+    status: string
+  ) => {
+    if (
+      status.includes(
+        "Approved by Finance"
+      )
+    )
       return "success";
 
     if (status.includes("Rejected"))
@@ -167,7 +197,9 @@ const Dashboard: React.FC = () => {
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => navigate("/trip")}
+            onClick={() =>
+              navigate("/trip")
+            }
           >
             New Trip & Claim
           </Button>
@@ -191,7 +223,9 @@ const Dashboard: React.FC = () => {
               placeholder="Enter Claim ID to search..."
               value={searchId}
               onChange={(e) =>
-                setSearchId(e.target.value)
+                setSearchId(
+                  e.target.value
+                )
               }
               onPressEnter={() =>
                 loadClaim(searchId)
@@ -212,16 +246,22 @@ const Dashboard: React.FC = () => {
 
         <Spin spinning={loading}>
           {/* DRIVER TRIPS */}
-          {userRole === "Driver" && (
+          {userRole === "driver" && (
             <>
-              <h3 style={{ marginBottom: 16 }}>
+              <h3
+                style={{
+                  marginBottom: 16,
+                }}
+              >
                 🚗 Your Trips
               </h3>
 
               {trips.length === 0 ? (
                 <Empty
                   description="No trips found"
-                  style={{ marginBottom: 30 }}
+                  style={{
+                    marginBottom: 30,
+                  }}
                 />
               ) : (
                 <Space
@@ -231,46 +271,92 @@ const Dashboard: React.FC = () => {
                     marginBottom: 30,
                   }}
                 >
-                  {trips.map((trip) => (
-                    <Card
-                      key={trip.id}
-                      hoverable
-                      onClick={() =>
-                        navigate("/submit-claim", {
-                        state: {
-                          tripId: trip.id,
-                        },
-                      })
-                      }
-                    >
-                      <Row gutter={16}>
-                        <Col span={6}>
-                          <strong>ID:</strong>{" "}
-                          {trip.id}
-                        </Col>
+                  {trips.map((trip) => {
+                    // เช็คว่า trip นี้มี claim แล้วหรือยัง
+                    const hasClaim =
+                      claims.some(
+                        (claim) =>
+                          claim.trip?.id ===
+                          trip.id
+                      );
 
-                        <Col span={10}>
-                          <strong>
-                            Route:
-                          </strong>{" "}
-                          {trip.origin} →{" "}
-                          {trip.destination}
-                        </Col>
+                    return (
+                      <Card
+                        key={trip.id}
+                        hoverable={!hasClaim}
+                        onClick={() => {
+                          if (!hasClaim) {
+                            navigate(
+                              "/submit-claim",
+                              {
+                                state: {
+                                  tripId:
+                                    trip.id,
+                                },
+                              }
+                            );
+                          }
+                        }}
+                      >
+                        <Row gutter={16}>
+                          <Col span={6}>
+                            <strong>
+                              ID:
+                            </strong>{" "}
+                            {trip.id}
+                          </Col>
 
-                        <Col span={4}>
-                          <Tag color="blue">
-                            {trip.status}
-                          </Tag>
-                        </Col>
+                          <Col span={10}>
+                            <strong>
+                              Route:
+                            </strong>{" "}
+                            {trip.origin} →{" "}
+                            {
+                              trip.destination
+                            }
+                          </Col>
 
-                        <Col span={4}>
-                          <Button type="primary">
-                            Submit Claim
-                          </Button>
-                        </Col>
-                      </Row>
-                    </Card>
-                  ))}
+                          <Col span={4}>
+                            <Tag color="blue">
+                              {trip.status}
+                            </Tag>
+                          </Col>
+
+                          <Col span={4}>
+                            {hasClaim ? (
+                              <Tag color="green">
+                                Claim
+                                Submitted
+                              </Tag>
+                            ) : (
+                              <Button
+                                type="primary"
+                                onClick={(
+                                  e
+                                ) => {
+                                  e.stopPropagation();
+
+                                  navigate(
+                                    "/submit-claim",
+                                    {
+                                      state:
+                                        {
+                                          tripId:
+                                            trip.id,
+                                        },
+                                    }
+                                  );
+                                }}
+                              >
+                                Submit
+                                Claim
+                              </Button>
+                            )}
+                          </Col>
+                        </Row>
+                      </Card>
+                    );
+                  })}
                 </Space>
               )}
             </>
@@ -371,10 +457,14 @@ const Dashboard: React.FC = () => {
                         </label>
 
                         <span>
-                          {claim.trip.origin} →{" "}
                           {
                             claim.trip
-                              .destination
+                              ?.origin
+                          }{" "}
+                          →{" "}
+                          {
+                            claim.trip
+                              ?.destination
                           }
                         </span>
                       </div>
@@ -389,7 +479,7 @@ const Dashboard: React.FC = () => {
                         <span>
                           {
                             claim.driver
-                              .username
+                              ?.username
                           }
                         </span>
                       </div>

@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Form, Input, Button, Card, message, Spin, DatePicker } from "antd";
+import { Form, Input, Button, Card, message, Spin } from "antd";
 import { tripAPI } from "../services/api/apiClient";
 import "../styles/forms.css";
-import {UserService} from "../services/user/user";
 
 const CreateTrip: React.FC = () => {
   const navigate = useNavigate();
@@ -29,7 +28,7 @@ const CreateTrip: React.FC = () => {
 
       if (response.data.success) {
         message.success("Trip created successfully!");
-        navigate("/submit-claim", { state: { tripId: response.data.data?.id } });
+        navigate("/dashboard", { state: { tripId: response.data.data?.id } });
       }
     } catch (error) {
       message.error("Failed to create trip");

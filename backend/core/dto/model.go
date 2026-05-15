@@ -20,6 +20,7 @@ type FuelClaimDetail struct {
 type SubmitClaimRequest struct {
 	TripID     string  `json:"trip_id"`
 	Amount     float64 `json:"amount"`
+	DriverID   string  `json:"driver_id"`
 	ReceiptRef string  `json:"receipt_ref"`
 	ReceiptURL string  `json:"receipt_url"` 
 }

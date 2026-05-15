@@ -5,6 +5,7 @@ export class UserService {
   private static getPayload(): any | null {
     try {
       const token = CookieService.get("access_token");
+      console.log("Token from CookieService:", token);
 
       if (!token) return null;
 
@@ -27,7 +28,7 @@ export class UserService {
 
     console.log("JWT Payload:", payload);
 
-    return payload?.Role || null;
+    return payload?.role || null;
   }
 
   // ✅ ดึง User ID
