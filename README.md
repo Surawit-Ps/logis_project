@@ -21,10 +21,11 @@ user login
      finance:    username: f1
                  password: 123
 
-สิ่งที่ทำไป - frontend ที่เกิด bug
-          การจัดการ secret key ผ่าน env
-          redis จัดการ rate limit
-          docker base สำหรับ run in 1 command (in progress)
+สิ่งที่ทำไป - frontend ที่เกิด bug,
+          การจัดการ secret key ผ่าน env,
+          redis จัดการ rate limit,
+          docker base สำหรับ run in 1 command (in progress),
+          RBAC ครบทุก handler
 
 workflow
 
@@ -33,5 +34,8 @@ user:d1 login -> create trip -> ส่ง fuel claim
 user:s1 login -> ตรวจสอบ fuel claim -> approve/reject
 
 user:s1 login -> ตรวจสอบ fuel claim -> approve/reject ครั้งที่2
+
+risk ที่อาจจะเจอ
+การยิง request เป็นจำนวนมากที่อาจเกิดปัญหา
           
         
